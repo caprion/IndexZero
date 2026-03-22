@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
+site/
+
+# Internal docs (research, design decisions, instructor tools)
+.internal/
+
+# Memory/context files (agent workspace)
+.memory/
+
+# Agent config (instructor tooling)
+CLAUDE.md
+AGENTS.md
+.github/copilot-instructions.md
+.github/agents/
+
+# Editor config
+.cursor/
+.cursorrules

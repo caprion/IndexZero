@@ -4,18 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IndexZero</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d0d0d;
-    --surface: #141414;
-    --surface2: #1a1a1a;
-    --border: #2a2a2a;
-    --accent: #e8ff47;
-    --accent2: #ff6b35;
-    --text: #e8e4dc;
-    --text-muted: #6b6b6b;
-    --text-dim: #999;
+    --bg: #faf6f0;
+    --surface: #ffffff;
+    --surface2: #fdf9f4;
+    --border: #ede4d5;
+    --accent: #c2452d;
+    --accent2: #1a5c4c;
+    --text: #3d2b1f;
+    --text-muted: #8b7560;
+    --text-dim: #6b5443;
+    --sand: #c4a67d;
+    --shadow: rgba(61,43,31,0.06);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,8 +25,8 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 300;
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    font-weight: 400;
     line-height: 1.7;
     font-size: 16px;
   }
@@ -37,20 +39,12 @@
     justify-content: space-between;
     align-items: flex-end;
     position: relative;
-    overflow: hidden;
-  }
-
-  header::before {
-    content: '';
-    position: absolute;
-    top: -80px; right: -80px;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(232,255,71,0.06) 0%, transparent 70%);
-    pointer-events: none;
+    background: var(--surface);
+    box-shadow: 0 2px 8px var(--shadow);
   }
 
   .logo {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 13px;
     color: var(--accent);
     letter-spacing: 0.15em;
@@ -58,7 +52,7 @@
   }
 
   .doc-meta {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 11px;
     color: var(--text-muted);
     text-align: right;
@@ -73,9 +67,9 @@
   }
 
   .hero-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 11px;
-    color: var(--accent);
+    color: var(--sand);
     letter-spacing: 0.2em;
     text-transform: uppercase;
     margin-bottom: 24px;
@@ -89,14 +83,14 @@
     flex: 1;
     max-width: 80px;
     height: 1px;
-    background: var(--accent);
+    background: var(--sand);
     opacity: 0.4;
   }
 
   h1 {
-    font-family: 'Fraunces', serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-size: clamp(52px, 8vw, 96px);
-    font-weight: 900;
+    font-weight: 700;
     line-height: 0.95;
     letter-spacing: -0.02em;
     margin-bottom: 8px;
@@ -106,10 +100,10 @@
   h1 .dim { color: var(--text-muted); }
 
   .tagline {
-    font-family: 'Fraunces', serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-style: italic;
     font-size: 22px;
-    font-weight: 300;
+    font-weight: 400;
     color: var(--text-dim);
     margin-top: 24px;
     margin-bottom: 0;
@@ -132,9 +126,9 @@
   section:last-child { border-bottom: none; }
 
   .section-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 10px;
-    color: var(--text-muted);
+    color: var(--sand);
     letter-spacing: 0.25em;
     text-transform: uppercase;
     margin-bottom: 32px;
@@ -150,7 +144,7 @@
   }
 
   h2 {
-    font-family: 'Fraunces', serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-size: 36px;
     font-weight: 700;
     line-height: 1.15;
@@ -159,7 +153,7 @@
   }
 
   h3 {
-    font-family: 'Fraunces', serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 16px;
@@ -185,7 +179,8 @@
   .callout {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
     padding: 24px 28px;
     margin: 32px 0;
     max-width: 720px;
@@ -193,11 +188,11 @@
 
   .callout p {
     margin: 0;
-    font-family: 'Fraunces', serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-style: italic;
     font-size: 18px;
     color: var(--text);
-    font-weight: 300;
+    font-weight: 400;
   }
 
   /* MODULE TABLE */
@@ -214,6 +209,7 @@
     gap: 0;
     background: var(--surface);
     border: 1px solid var(--border);
+    border-radius: 4px;
     transition: background 0.2s;
   }
 
@@ -226,7 +222,7 @@
   }
 
   .module-row.header-row .cell {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 10px;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -244,7 +240,7 @@
   .cell:last-child { border-right: none; }
 
   .cell.module-num {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 12px;
     color: var(--accent);
     font-weight: 500;
@@ -281,6 +277,7 @@
   .m0-block {
     background: var(--surface);
     border: 1px solid var(--border);
+    border-radius: 8px;
     padding: 40px;
     margin-top: 32px;
     max-width: 800px;
@@ -292,11 +289,11 @@
     content: 'M0';
     position: absolute;
     top: -20px; right: 20px;
-    font-family: 'Fraunces', serif;
+    font-family: 'Libre Baskerville', Georgia, serif;
     font-size: 120px;
-    font-weight: 900;
+    font-weight: 700;
     color: var(--accent);
-    opacity: 0.04;
+    opacity: 0.06;
     line-height: 1;
     pointer-events: none;
   }
@@ -308,7 +305,7 @@
   }
 
   .m0-subtitle {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 11px;
     color: var(--accent);
     letter-spacing: 0.15em;
@@ -328,11 +325,12 @@
   .misconception-card {
     background: var(--surface);
     border: 1px solid var(--border);
+    border-radius: 8px;
     padding: 24px;
   }
 
   .card-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 10px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
@@ -342,8 +340,8 @@
     gap: 8px;
   }
 
-  .card-label.wrong { color: var(--accent2); }
-  .card-label.right { color: var(--accent); }
+  .card-label.wrong { color: var(--accent); }
+  .card-label.right { color: var(--accent2); }
 
   .card-label::before {
     content: '';
@@ -362,18 +360,19 @@
   .exercise {
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-top: 2px solid var(--accent);
+    border-top: 3px solid var(--accent2);
+    border-radius: 8px;
     padding: 32px 36px;
     margin-top: 32px;
     max-width: 800px;
   }
 
   .exercise-label {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 10px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--accent2);
     margin-bottom: 20px;
   }
 
@@ -398,7 +397,7 @@
   }
 
   .step-num {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 11px;
     color: var(--accent);
     min-width: 24px;
@@ -407,13 +406,14 @@
 
   /* DELIVERABLE */
   .deliverable {
-    background: rgba(232,255,71,0.04);
-    border: 1px solid rgba(232,255,71,0.15);
+    background: rgba(26,92,76,0.06);
+    border: 1px solid rgba(26,92,76,0.15);
+    border-radius: 6px;
     padding: 16px 20px;
     margin-top: 20px;
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 12px;
-    color: var(--accent);
+    color: var(--accent2);
     display: flex;
     gap: 12px;
     align-items: flex-start;
@@ -440,7 +440,7 @@
   .intuition-list li:last-child { border-bottom: none; }
 
   .intuition-icon {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 11px;
     color: var(--accent);
     min-width: 40px;
@@ -470,13 +470,13 @@
   }
 
   footer .logo {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 12px;
     color: var(--text-muted);
   }
 
   footer .version {
-    font-family: 'DM Mono', monospace;
+    font-family: 'IBM Plex Mono', 'Consolas', monospace;
     font-size: 11px;
     color: var(--text-muted);
   }

@@ -2,6 +2,16 @@
 
 Your index structure choices have consequences in M4 (Evaluation) and beyond. This exercise asks you to predict those consequences before you see them.
 
+## Quick definitions
+
+You haven't built M4 yet, so here's what these metrics mean:
+
+- **precision@10**: Of your top 10 results, how many are actually relevant? (0.0 to 1.0)
+- **MRR (Mean Reciprocal Rank)**: How early does the first relevant result appear? If it's result #1, MRR = 1.0. If it's result #5, MRR = 0.2.
+- **nDCG (Normalized Discounted Cumulative Gain)**: A ranking quality score that rewards putting highly relevant results at the top. 1.0 = perfect ranking.
+- **recall**: Of all relevant documents in the corpus, how many did your system return?
+- **hapax legomenon**: A term that appears in exactly one document in the corpus. Often 40-50% of unique terms are hapax.
+
 ## How this works
 
 1. Read each scenario below.

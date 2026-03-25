@@ -61,39 +61,42 @@ Start with M1: open `modules/m1_text_processing/README.md`.
 
 ```
 IndexZero/
-├── src/indexzero/                  ← your code lives here
+├── src/indexzero/                  <- your code lives here
 │   ├── __init__.py
-│   ├── __main__.py                ← CLI entry point
-│   └── text_processing/           ← M1: tokenizer + vocabulary
-│       ├── contracts.py           ← data shapes (given, don't edit)
-│       ├── tokenizer.py           ← implement this
-│       └── vocabulary.py          ← implement this
-├── tests/                         ← tests ship with the repo
-│   ├── conftest.py                ← shared fixtures
-│   ├── test_tokenizer.py          ← run these as you work
-│   ├── test_vocabulary.py
+│   ├── __main__.py                <- CLI: tokenize, vocab, index, lookup
+│   ├── text_processing/           <- M1: tokenizer + vocabulary
+│   │   ├── contracts.py           <- data shapes (given, don't edit)
+│   │   ├── tokenizer.py           <- implement this
+│   │   └── vocabulary.py          <- implement this
+│   └── indexing/                   <- M2: inverted index
+│       ├── contracts.py           <- data shapes (given, don't edit)
+│       ├── serialization.py       <- JSON helpers (given, don't edit)
+│       └── indexer.py             <- implement this
+├── tests/
+│   ├── conftest.py                <- shared fixtures
+│   ├── test_tokenizer.py          <- M1 tests
+│   ├── test_vocabulary.py         <- M1 tests
+│   ├── test_indexer.py            <- M2 tests (skip until M1 done)
+│   ├── test_index_io.py           <- M2 bonus tests
 │   └── test_cli.py
 ├── data/
-│   ├── flipkart_titles_tiny.csv   ← 8 rows for unit tests
-│   └── flipkart_titles_500.csv    ← 500 rows for assessment exercises
+│   ├── flipkart_titles_tiny.csv   <- 8 rows for unit tests
+│   └── flipkart_titles_500.csv    <- 500 rows for assessment exercises
 ├── modules/
 │   ├── m0_ranking_audit/
-│   └── m1_text_processing/        ← module guide + assessment artifacts
-│       ├── README.md              ← start here for M1
-│       ├── decision_log_template.md
-│       ├── break_it_assignment.md
-│       ├── consequence_chain.md
-│       ├── config_mutations.md
-│       ├── observe_prompts.md
-│       ├── interface_contract.md
-│       └── hints/                 ← open when stuck (5 concept guides)
+│   ├── m1_text_processing/        <- module guide + assessment artifacts
+│   │   ├── README.md              <- start here for M1
+│   │   └── hints/
+│   └── m2_inverted_index/         <- module guide + assessment artifacts
+│       ├── README.md              <- start here for M2
+│       └── hints/
 ├── scripts/
-│   ├── generate_corpus.py         ← generates the 500-title dataset
-│   └── prepare_course_data.py     ← placeholder for ESCI download
-├── docs/                          ← course overview page
+│   ├── generate_corpus.py         <- generates the 500-title dataset
+│   └── prepare_course_data.py     <- placeholder for ESCI download
+├── docs/
 ├── pyproject.toml
 ├── Makefile
-└── .github/workflows/test.yml     ← CI: pytest on push
+└── .github/workflows/test.yml     <- CI: pytest on push
 ```
 
 ## Design principles

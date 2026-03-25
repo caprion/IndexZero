@@ -117,7 +117,47 @@ Run the full test suite: `pytest tests/test_indexer.py -v`
 
 ### Phase 3: Use it
 
-Implement `lookup`. This should be a short function. Then try it:
+Implement `lookup`. This should be a short function. Then try it in a Python REPL:
+
+```python
+from indexzero.text_processing import TokenizerConfig, tokenize_document
+from indexzero.indexing import build_index, lookup
+
+# Tokenize a few docs (using your M1 implementation)
+config = TokenizerConfig()
+docs = [
+    tokenize_document("fk-001", "Samsung Galaxy M14 5G 128GB Blue", config),
+    tokenize_document("fk-002", "Nike Running Shoes for Men", config),
+    tokenize_document("fk-003", "Boat Bluetooth Earbuds with Mic", config),
+]
+
+index = build_index(docs)
+print(f"Unique terms: {len(index.postings)}")
+print(f"Avg doc length: {index.average_document_length:.1f}")
+
+# The payoff: instant lookup vs scanning all documents
+print(lookup(index, "bluetooth"))   # one doc
+print(lookup(index, "5g"))          # one doc
+print(lookup(index, "nonexistent")) # empty list
+```
+
+Notice the difference: building the index processes all documents once. But each lookup is instant -- a single dictionary access.
+
+### Phase 4: Inspect and reflect
+
+Look at your index in detail:
+
+- What does a common term's posting list look like? (e.g., "with")
+- What does a rare term's posting list look like? (e.g., a specific brand name)
+- How many terms are in the index? How many postings total?
+
+Then complete the assessment artifacts in this module folder.
+
+### Optional Phase 5: Persist and use CLI
+
+Implement `save_index` and `load_index` using the helpers in `serialization.py`. Run: `pytest tests/test_index_io.py -v`
+
+Then try the CLI commands (these require save/load to work):
 
 ```bash
 python -m indexzero index --csv data/flipkart_titles_500.csv --output index.json
@@ -125,22 +165,6 @@ python -m indexzero lookup --index index.json --term bluetooth
 python -m indexzero lookup --index index.json --term samsung
 python -m indexzero lookup --index index.json --term nonexistentterm
 ```
-
-Notice the difference: building the index takes a moment (processes all 500 docs). But each lookup is instant.
-
-### Phase 4: Inspect and reflect
-
-Open `index.json` (if you did the bonus) or print the index in a REPL. Look at:
-
-- What does a common term's posting list look like? (e.g., "with")
-- What does a rare term's posting list look like? (e.g., a specific brand name)
-- How big is the index compared to the raw CSV?
-
-Then complete the assessment artifacts in this module folder.
-
-### Optional Phase 5: Persist it
-
-Implement `save_index` and `load_index` using the helpers in `serialization.py`. Run: `pytest tests/test_index_io.py -v`
 
 ## Running tests
 

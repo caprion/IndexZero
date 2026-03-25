@@ -3,6 +3,8 @@
 Usage:
     python -m indexzero tokenize --text "Nike running shoes for men"
     python -m indexzero vocab --csv data/flipkart_titles_tiny.csv --text-column title
+    python -m indexzero index --csv data/flipkart_titles_500.csv --output index.json
+    python -m indexzero lookup --index index.json --term bluetooth
 """
 
 from __future__ import annotations
@@ -223,11 +225,14 @@ def main() -> None:
         from .indexing import load_index, lookup
 
         index = load_index(args.index)
-        results = lookup(index, args.term)
+        # Normalize the term the same way the index was built: lowercase.
+        # This prevents "Bluetooth" returning nothing when the index has "bluetooth".
+        normalized_term = args.term.strip().lower()
+        results = lookup(index, normalized_term)
         if not results:
-            print(f"Term '{args.term}' not found in index.")
+            print(f"Term '{normalized_term}' not found in index.")
         else:
-            print(f"Term '{args.term}' found in {len(results)} document(s):")
+            print(f"Term '{normalized_term}' found in {len(results)} document(s):")
             for posting in results:
                 print(f"  {posting.doc_id}  tf={posting.term_frequency}")
         return

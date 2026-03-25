@@ -47,8 +47,8 @@ Start with M1: open `modules/m1_text_processing/README.md`.
 | Module | Name | What you build | Core concept |
 |---|---|---|---|
 | M0 | The Problem | Ranking audit | Search is ranking, not lookup |
-| **M1** | **Text Processing** | **Tokenizer + vocabulary** | **Normalization choices have consequences** |
-| M2 | The Index | Inverted index | Postings lists and lookup cost |
+| M1 | Text Processing | Tokenizer + vocabulary | Normalization choices have consequences |
+| **M2** | **The Index** | **Inverted index** | **Postings lists and lookup cost** |
 | M3 | Ranking | BM25 scorer | Term weighting and document length |
 | M4 | Did It Work? | Eval harness | nDCG, MRR, precision@k |
 | M5 | Smarter Queries | Query processor | Boolean, phrase, proximity |

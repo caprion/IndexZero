@@ -104,6 +104,37 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Split on numeric boundaries (e.g., 8GB -> 8 gb).",
     )
 
+    # --- index -------------------------------------------------------------
+    idx = subparsers.add_parser("index", help="Build an inverted index from a CSV file.")
+    idx.add_argument("--csv", required=True, type=Path, help="Path to CSV file.")
+    idx.add_argument("--output", required=True, type=Path, help="Output path for index JSON.")
+    idx.add_argument(
+        "--text-column",
+        default="title",
+        help="Name of the text column (default: title).",
+    )
+    idx.add_argument(
+        "--doc-id-column",
+        default="product_id",
+        help="Name of the document ID column (default: product_id).",
+    )
+    idx.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Limit number of documents to process.",
+    )
+    idx.add_argument("--no-lowercase", action="store_true", help="Disable lowercasing.")
+    idx.add_argument("--drop-stopwords", action="store_true", help="Remove stopwords.")
+    idx.add_argument("--stemming", choices=["none", "suffix"], default="none")
+    idx.add_argument("--strip-accents", action="store_true")
+    idx.add_argument("--split-numeric", action="store_true")
+
+    # --- lookup ------------------------------------------------------------
+    lkp = subparsers.add_parser("lookup", help="Look up a term in a built index.")
+    lkp.add_argument("--index", required=True, type=Path, help="Path to index JSON file.")
+    lkp.add_argument("--term", required=True, help="Term to look up.")
+
     return parser
 
 
@@ -166,6 +197,39 @@ def main() -> None:
         print(f"documents  = {vocabulary.document_count}")
         print(f"total_terms = {vocabulary.total_terms}")
         print(f"vocab_size  = {len(vocabulary.token_to_id)}")
+        return
+
+    if args.command == "index":
+        from .indexing import build_index, save_index
+
+        config = _config_from_args(args)
+        documents = _load_csv_documents(
+            csv_path=args.csv,
+            text_column=args.text_column,
+            doc_id_column=args.doc_id_column,
+            limit=args.limit,
+            config=config,
+        )
+        index = build_index(documents)
+        save_index(index, args.output)
+        print(f"documents   = {index.document_count}")
+        print(f"unique_terms = {len(index.postings)}")
+        print(f"total_terms  = {index.total_terms}")
+        print(f"avg_doc_len  = {index.average_document_length:.1f}")
+        print(f"saved to     = {args.output}")
+        return
+
+    if args.command == "lookup":
+        from .indexing import load_index, lookup
+
+        index = load_index(args.index)
+        results = lookup(index, args.term)
+        if not results:
+            print(f"Term '{args.term}' not found in index.")
+        else:
+            print(f"Term '{args.term}' found in {len(results)} document(s):")
+            for posting in results:
+                print(f"  {posting.doc_id}  tf={posting.term_frequency}")
         return
 
     parser.print_help()

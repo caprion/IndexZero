@@ -5,6 +5,7 @@ Usage:
     python -m indexzero vocab --csv data/flipkart_titles_tiny.csv --text-column title
     python -m indexzero index --csv data/flipkart_titles_500.csv --output index.json
     python -m indexzero lookup --index index.json --term bluetooth
+    python -m indexzero search --index index.json --query "samsung phone" --top-k 10
 """
 
 from __future__ import annotations
@@ -137,6 +138,14 @@ def _build_parser() -> argparse.ArgumentParser:
     lkp.add_argument("--index", required=True, type=Path, help="Path to index JSON file.")
     lkp.add_argument("--term", required=True, help="Term to look up.")
 
+    # --- search ------------------------------------------------------------
+    srch = subparsers.add_parser("search", help="Search the index with BM25 ranking.")
+    srch.add_argument("--index", required=True, type=Path, help="Path to index JSON file.")
+    srch.add_argument("--query", required=True, help="Search query (space-separated terms).")
+    srch.add_argument("--top-k", type=int, default=10, help="Number of results (default: 10).")
+    srch.add_argument("--k1", type=float, default=1.2, help="BM25 k1 parameter (default: 1.2).")
+    srch.add_argument("--b", type=float, default=0.75, help="BM25 b parameter (default: 0.75).")
+
     return parser
 
 
@@ -235,6 +244,22 @@ def main() -> None:
             print(f"Term '{normalized_term}' found in {len(results)} document(s):")
             for posting in results:
                 print(f"  {posting.doc_id}  tf={posting.term_frequency}")
+        return
+
+    if args.command == "search":
+        from .indexing import load_index
+        from .scoring import ScorerConfig, search
+
+        index = load_index(args.index)
+        query_terms = args.query.strip().lower().split()
+        config = ScorerConfig(k1=args.k1, b=args.b)
+        results = search(query_terms, index, config, top_k=args.top_k)
+        if not results:
+            print(f"No results for '{args.query}'.")
+        else:
+            print(f"Top {len(results)} results for '{args.query}':")
+            for rank, result in enumerate(results, 1):
+                print(f"  {rank}. {result.doc_id}  score={result.score:.4f}")
         return
 
     parser.print_help()

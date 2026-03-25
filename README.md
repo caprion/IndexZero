@@ -38,7 +38,7 @@ pytest tests/ -v
 >
 > **Closed your terminal?** You need to re-activate: `cd IndexZero` then `.venv\Scripts\Activate.ps1` (or `source .venv/bin/activate` on Mac/Linux). If you don't see `(.venv)` in your prompt, the venv isn't active.
 
-You should see about **44 failing tests** and **3 passing** CLI tests. That's correct — each failing test tells you what to implement. The failures all say `NotImplementedError`, pointing to the exact functions.
+You should see many failing tests and a few passing CLI tests. That's correct — each failing test tells you what to implement. The failures all say `NotImplementedError`, pointing to the exact functions.
 
 Start with M1: open `modules/m1_text_processing/README.md`.
 
@@ -48,8 +48,8 @@ Start with M1: open `modules/m1_text_processing/README.md`.
 |---|---|---|---|
 | M0 | The Problem | Ranking audit | Search is ranking, not lookup |
 | M1 | Text Processing | Tokenizer + vocabulary | Normalization choices have consequences |
-| **M2** | **The Index** | **Inverted index** | **Postings lists and lookup cost** |
-| M3 | Ranking | BM25 scorer | Term weighting and document length |
+| M2 | The Index | Inverted index | Postings lists and lookup cost |
+| **M3** | **Ranking** | **BM25 scorer** | **Term weighting and document length** |
 | M4 | Did It Work? | Eval harness | nDCG, MRR, precision@k |
 | M5 | Smarter Queries | Query processor | Boolean, phrase, proximity |
 | M6 | Meaning, Not Words | Vector retrieval | Semantic similarity |
@@ -63,21 +63,25 @@ Start with M1: open `modules/m1_text_processing/README.md`.
 IndexZero/
 ├── src/indexzero/                  <- your code lives here
 │   ├── __init__.py
-│   ├── __main__.py                <- CLI: tokenize, vocab, index, lookup
+│   ├── __main__.py                <- CLI: tokenize, vocab, index, lookup, search
 │   ├── text_processing/           <- M1: tokenizer + vocabulary
 │   │   ├── contracts.py           <- data shapes (given, don't edit)
 │   │   ├── tokenizer.py           <- implement this
 │   │   └── vocabulary.py          <- implement this
-│   └── indexing/                   <- M2: inverted index
+│   ├── indexing/                   <- M2: inverted index
+│   │   ├── contracts.py           <- data shapes (given, don't edit)
+│   │   ├── serialization.py       <- JSON helpers (given, don't edit)
+│   │   └── indexer.py             <- implement this
+│   └── scoring/                   <- M3: BM25 ranking
 │       ├── contracts.py           <- data shapes (given, don't edit)
-│       ├── serialization.py       <- JSON helpers (given, don't edit)
-│       └── indexer.py             <- implement this
+│       └── scorer.py              <- implement this
 ├── tests/
 │   ├── conftest.py                <- shared fixtures
 │   ├── test_tokenizer.py          <- M1 tests
 │   ├── test_vocabulary.py         <- M1 tests
 │   ├── test_indexer.py            <- M2 tests (skip until M1 done)
 │   ├── test_index_io.py           <- M2 bonus tests
+│   ├── test_scorer.py             <- M3 tests (skip until M2 done)
 │   └── test_cli.py
 ├── data/
 │   ├── flipkart_titles_tiny.csv   <- 8 rows for unit tests
@@ -87,8 +91,11 @@ IndexZero/
 │   ├── m1_text_processing/        <- module guide + assessment artifacts
 │   │   ├── README.md              <- start here for M1
 │   │   └── hints/
-│   └── m2_inverted_index/         <- module guide + assessment artifacts
-│       ├── README.md              <- start here for M2
+│   ├── m2_inverted_index/         <- module guide + assessment artifacts
+│   │   ├── README.md              <- start here for M2
+│   │   └── hints/
+│   └── m3_bm25_ranking/           <- module guide + assessment artifacts
+│       ├── README.md              <- start here for M3
 │       └── hints/
 ├── scripts/
 │   ├── generate_corpus.py         <- generates the 500-title dataset

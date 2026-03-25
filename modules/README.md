@@ -1,8 +1,8 @@
 # Modules
 
-Every module extends the same `IndexZero` codebase.
+Each module extends the same `IndexZero` codebase. Your earlier code stays — later modules build on it.
 
-- `m0_ranking_audit` grounds students in the problem before any code shows up.
-- `m1_text_processing` turns raw text into the token stream M2 will index.
-
-As later modules arrive, keep the build incremental. Do not replace earlier layers; extend them.
+- `m0_ranking_audit` — observe ranking behavior before writing any code
+- `m1_text_processing` — tokenizer and vocabulary
+- `m2_inverted_index` — postings lists and document lookup
+- `m3_bm25_ranking` — term weighting and scored search

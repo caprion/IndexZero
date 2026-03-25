@@ -25,14 +25,8 @@
   .\.venv\Scripts\python.exe scripts\generate_corpus.py
   ```
 
-## What's not here (yet)
+## Dataset usage
 
-- **`amazon_esci_2k/`** — 2,000 query-product pairs with E/S/C/I relevance labels from the Amazon ESCI dataset (Apache 2.0). Used in M4 (Evaluation) and beyond. 200 queries x ~10 products each.
-
-## Design principles
-
-- **Unit tests** use `flipkart_titles_tiny.csv` (8 rows, sub-second, committed to the repo).
-- **Assessment exercises** (decision logs, break-its, Zipf analysis) use the 500-title dataset for meaningful statistical signal.
-- **Evaluation modules** (M4+) use the ESCI dataset for pre-labeled relevance judgments.
-
-The tiny dataset ships with the repo. The 500-title CSV is regenerated on demand from `scripts/generate_corpus.py` and can be committed or gitignored depending on preference.
+- **Unit tests** use `flipkart_titles_tiny.csv` (8 rows, sub-second).
+- **Exercises** (decision logs, break-its, Zipf analysis) use the 500-title dataset.
+- **Evaluation** (M4+) will use ESCI relevance labels when that module ships.

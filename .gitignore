@@ -20,6 +20,9 @@ AGENTS.md
 .github/copilot-instructions.md
 .github/agents/
 
+# Reference implementations (instructor-only, never pushed to student repo)
+_reference_*.py
+
 # Editor config
 .cursor/
 .cursorrules

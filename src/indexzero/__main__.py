@@ -6,6 +6,7 @@ Usage:
     python -m indexzero index --csv data/flipkart_titles_500.csv --output index.json
     python -m indexzero lookup --index index.json --term bluetooth
     python -m indexzero search --index index.json --query "samsung phone" --top-k 10
+    python -m indexzero eval --index index.json --qrels data/amazon_esci_sample/qrels.csv --queries data/amazon_esci_sample/queries.csv --k 10
 """
 
 from __future__ import annotations
@@ -146,6 +147,27 @@ def _build_parser() -> argparse.ArgumentParser:
     srch.add_argument("--k1", type=float, default=1.2, help="BM25 k1 parameter (default: 1.2).")
     srch.add_argument("--b", type=float, default=0.75, help="BM25 b parameter (default: 0.75).")
 
+    # --- eval --------------------------------------------------------------
+    evl = subparsers.add_parser("eval", help="Evaluate search quality using qrels.")
+    evl.add_argument("--index", required=True, type=Path, help="Path to index JSON file.")
+    evl.add_argument("--qrels", required=True, type=Path, help="Path to qrels CSV file.")
+    evl.add_argument("--queries", required=True, type=Path, help="Path to queries CSV file.")
+    evl.add_argument("--k", type=int, default=10, help="Cutoff depth for metrics (default: 10).")
+    evl.add_argument("--k1", type=float, default=1.2, help="BM25 k1 parameter (default: 1.2).")
+    evl.add_argument("--b", type=float, default=0.75, help="BM25 b parameter (default: 0.75).")
+    evl.add_argument("--top-k", type=int, default=10, help="Number of search results per query (default: 10).")
+    evl.add_argument(
+        "--relevance-threshold",
+        type=int,
+        default=2,
+        help="Minimum grade for binary relevance (default: 2).",
+    )
+    evl.add_argument("--no-lowercase", action="store_true", help="Disable lowercasing.")
+    evl.add_argument("--drop-stopwords", action="store_true", help="Remove stopwords.")
+    evl.add_argument("--stemming", choices=["none", "suffix"], default="none")
+    evl.add_argument("--strip-accents", action="store_true")
+    evl.add_argument("--split-numeric", action="store_true")
+
     return parser
 
 
@@ -260,6 +282,58 @@ def main() -> None:
             print(f"Top {len(results)} results for '{args.query}':")
             for rank, result in enumerate(results, 1):
                 print(f"  {rank}. {result.doc_id}  score={result.score:.4f}")
+        return
+
+    if args.command == "eval":
+        import csv as csv_mod
+
+        from .evaluation import QueryResults, evaluate, load_qrels
+        from .indexing import load_index
+        from .scoring import ScorerConfig, search
+        from .text_processing import tokenize_text
+
+        index = load_index(args.index)
+        qrels = load_qrels(args.qrels)
+        scorer_config = ScorerConfig(k1=args.k1, b=args.b)
+        tok_config = _config_from_args(args)
+
+        # Load queries from CSV
+        queries: list[tuple[str, str]] = []
+        with args.queries.open("r", encoding="utf-8-sig", newline="") as fh:
+            reader = csv_mod.DictReader(fh)
+            for row in reader:
+                queries.append((row["query_id"].strip(), row["query"].strip()))
+
+        # Run search for each query, collect QueryResults
+        all_results: list[QueryResults] = []
+        for query_id, query_text in queries:
+            query_terms = tokenize_text(query_text, tok_config)
+            search_results = search(query_terms, index, scorer_config, top_k=args.top_k)
+            doc_ids = [r.doc_id for r in search_results]
+            all_results.append(QueryResults(query_id=query_id, doc_ids=doc_ids))
+
+        # Run evaluation
+        report = evaluate(
+            all_results, qrels, k=args.k, relevance_threshold=args.relevance_threshold
+        )
+
+        # Print report
+        print(f"Evaluation Report (k={report.k}, queries={report.num_queries})")
+        print(f"  Mean P@{report.k}:    {report.mean_precision_at_k:.4f}")
+        print(f"  Mean R@{report.k}:    {report.mean_recall_at_k:.4f}")
+        print(f"  MRR:          {report.mean_reciprocal_rank:.4f}")
+        print(f"  Mean nDCG@{report.k}: {report.mean_ndcg_at_k:.4f}")
+
+        if report.per_query:
+            print()
+            print("Per-query breakdown:")
+            for qm in report.per_query:
+                print(
+                    f"  {qm.query_id}:  P@k={qm.precision_at_k:.3f}"
+                    f"  R@k={qm.recall_at_k:.3f}"
+                    f"  RR={qm.reciprocal_rank:.3f}"
+                    f"  nDCG={qm.ndcg_at_k:.3f}"
+                )
         return
 
     parser.print_help()

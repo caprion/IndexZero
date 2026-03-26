@@ -34,7 +34,7 @@ Start with M1: open `modules/m1_text_processing/README.md`.
 | M1 | Text Processing | Tokenizer + vocabulary | Normalization choices have consequences |
 | M2 | The Index | Inverted index | Postings lists and lookup cost |
 | **M3** | **Ranking** | **BM25 scorer** | **Term weighting and document length** |
-| M4 | Did It Work? | Eval harness | nDCG, MRR, precision@k |
+| **M4** | **Did It Work?** | **Eval harness** | **nDCG, MRR, precision@k** |
 | M5 | Smarter Queries | Query processor | Boolean, phrase, proximity |
 | M6 | Meaning, Not Words | Vector retrieval | Semantic similarity |
 | M7 | Both Together | Hybrid retrieval | Fusion and reranking |
@@ -47,7 +47,7 @@ Start with M1: open `modules/m1_text_processing/README.md`.
 IndexZero/
 ├── src/indexzero/                  <- your code lives here
 │   ├── __init__.py
-│   ├── __main__.py                <- CLI: tokenize, vocab, index, lookup, search
+│   ├── __main__.py                <- CLI: tokenize, vocab, index, lookup, search, eval
 │   ├── text_processing/           <- M1: tokenizer + vocabulary
 │   │   ├── contracts.py           <- data shapes (given, don't edit)
 │   │   ├── tokenizer.py           <- implement this
@@ -59,6 +59,10 @@ IndexZero/
 │   └── scoring/                   <- M3: BM25 ranking
 │       ├── contracts.py           <- data shapes (given, don't edit)
 │       └── scorer.py              <- implement this
+│   └── evaluation/                <- M4: search quality metrics
+│       ├── contracts.py           <- data shapes (given, don't edit)
+│       ├── qrels_io.py            <- CSV helpers (given, don't edit)
+│       └── metrics.py             <- implement this
 ├── tests/
 │   ├── conftest.py                <- shared fixtures
 │   ├── test_tokenizer.py          <- M1 tests
@@ -66,10 +70,12 @@ IndexZero/
 │   ├── test_indexer.py            <- M2 tests (skip until M1 done)
 │   ├── test_index_io.py           <- M2 bonus tests
 │   ├── test_scorer.py             <- M3 tests (skip until M2 done)
+│   ├── test_metrics.py            <- M4 tests
 │   └── test_cli.py
 ├── data/
 │   ├── flipkart_titles_tiny.csv   <- 8 rows for unit tests
-│   └── flipkart_titles_500.csv    <- 500 rows for assessment exercises
+│   ├── flipkart_titles_500.csv    <- 500 rows for assessment exercises
+│   └── amazon_esci_sample/        <- 40 products, 20 queries, 100 judgments for M4
 ├── modules/
 │   ├── m0_ranking_audit/
 │   ├── m1_text_processing/        <- module guide + assessment artifacts
@@ -80,6 +86,9 @@ IndexZero/
 │   │   └── hints/
 │   └── m3_bm25_ranking/           <- module guide + assessment artifacts
 │       ├── README.md              <- start here for M3
+│       └── hints/
+│   └── m4_evaluation/             <- module guide + assessment artifacts
+│       ├── README.md              <- start here for M4
 │       └── hints/
 ├── scripts/
 │   ├── generate_corpus.py         <- generates the 500-title dataset

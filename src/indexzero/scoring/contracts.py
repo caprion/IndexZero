@@ -1,7 +1,7 @@
 """Data contracts for the scoring module (M3).
 
 These dataclasses define the shapes that flow between M3 and downstream modules.
-M4 (Evaluation) consumes SearchResult lists directly.
+M4 (Evaluation) converts SearchResult lists into QueryResults for evaluation.
 
 Students: This file is GIVEN to you. Do not modify it.
 """

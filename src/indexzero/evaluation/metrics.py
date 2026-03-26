@@ -46,7 +46,16 @@ def precision_at_k(
     Example:
         Top-3 results are [relevant, irrelevant, relevant] -> P@3 = 2/3.
     """
-    raise NotImplementedError("M4: implement precision_at_k")
+    if k < 1:
+        raise ValueError(f"k must be >= 1, got {k}")
+    relevant_docs = {
+        judgment.doc_id
+        for judgment in judgments
+        if judgment.relevance >= relevance_threshold
+    }
+    top_k = results.doc_ids[:k]
+    relevant_in_top_k = sum(1 for doc_id in top_k if doc_id in relevant_docs)
+    return relevant_in_top_k / k
 
 
 def recall_at_k(
@@ -75,7 +84,17 @@ def recall_at_k(
     Example:
         2 relevant docs in qrels, 1 found in top-5 -> R@5 = 0.5.
     """
-    raise NotImplementedError("M4: implement recall_at_k")
+    relevant_docs = {
+        judgment.doc_id
+        for judgment in judgments
+        if judgment.relevance >= relevance_threshold
+    }
+    total_relevant = len(relevant_docs)
+    if total_relevant == 0:
+        return 1.0
+    top_k = results.doc_ids[:k]
+    found = sum(1 for doc_id in top_k if doc_id in relevant_docs)
+    return found / total_relevant
 
 
 def reciprocal_rank(
@@ -101,7 +120,15 @@ def reciprocal_rank(
         1/3 means the third result is the first relevant one.
         0.0 means no relevant result was found.
     """
-    raise NotImplementedError("M4: implement reciprocal_rank")
+    relevant_docs = {
+        judgment.doc_id
+        for judgment in judgments
+        if judgment.relevance >= relevance_threshold
+    }
+    for rank, doc_id in enumerate(results.doc_ids, start=1):
+        if doc_id in relevant_docs:
+            return 1.0 / rank
+    return 0.0
 
 
 def ndcg_at_k(
@@ -136,7 +163,24 @@ def ndcg_at_k(
     Returns:
         float in [0.0, 1.0]. 1.0 means the ranking is ideal.
     """
-    raise NotImplementedError("M4: implement ndcg_at_k")
+    grade_map = {judgment.doc_id: judgment.relevance for judgment in judgments}
+
+    dcg = 0.0
+    for index, doc_id in enumerate(results.doc_ids[:k]):
+        relevance = grade_map.get(doc_id, 0)
+        dcg += relevance / math.log2(index + 2)
+
+    ideal_top_k = sorted(
+        (judgment.relevance for judgment in judgments),
+        reverse=True,
+    )[:k]
+    idcg = 0.0
+    for index, relevance in enumerate(ideal_top_k):
+        idcg += relevance / math.log2(index + 2)
+
+    if idcg == 0.0:
+        return 0.0
+    return dcg / idcg
 
 
 def evaluate(
@@ -165,4 +209,47 @@ def evaluate(
     Returns:
         EvalReport with per-query breakdowns and mean scores.
     """
-    raise NotImplementedError("M4: implement evaluate")
+    judgments_by_query: dict[str, list[RelevanceJudgment]] = defaultdict(list)
+    for judgment in all_judgments:
+        judgments_by_query[judgment.query_id].append(judgment)
+
+    per_query: list[QueryMetrics] = []
+    for query_results in all_results:
+        query_judgments = judgments_by_query.get(query_results.query_id, [])
+        per_query.append(
+            QueryMetrics(
+                query_id=query_results.query_id,
+                precision_at_k=precision_at_k(
+                    query_results,
+                    query_judgments,
+                    k,
+                    relevance_threshold,
+                ),
+                recall_at_k=recall_at_k(
+                    query_results,
+                    query_judgments,
+                    k,
+                    relevance_threshold,
+                ),
+                reciprocal_rank=reciprocal_rank(
+                    query_results,
+                    query_judgments,
+                    relevance_threshold,
+                ),
+                ndcg_at_k=ndcg_at_k(query_results, query_judgments, k),
+            )
+        )
+
+    num_queries = len(per_query)
+    if num_queries == 0:
+        return EvalReport(k=k, num_queries=0)
+
+    return EvalReport(
+        per_query=per_query,
+        mean_precision_at_k=sum(item.precision_at_k for item in per_query) / num_queries,
+        mean_recall_at_k=sum(item.recall_at_k for item in per_query) / num_queries,
+        mean_reciprocal_rank=sum(item.reciprocal_rank for item in per_query) / num_queries,
+        mean_ndcg_at_k=sum(item.ndcg_at_k for item in per_query) / num_queries,
+        k=k,
+        num_queries=num_queries,
+    )

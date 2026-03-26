@@ -18,11 +18,13 @@ Optional bonus (after core tests pass):
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from indexzero.text_processing.contracts import TokenizedDocument
 
 from .contracts import InvertedIndex, Posting
+from .serialization import index_from_dict, index_to_dict
 
 
 def build_index(documents: list[TokenizedDocument]) -> InvertedIndex:
@@ -50,7 +52,26 @@ def build_index(documents: list[TokenizedDocument]) -> InvertedIndex:
         - total_terms == sum of all document token counts.
         - Posting lists are sorted by doc_id (deterministic output).
     """
-    raise NotImplementedError("Students implement this in M2.")
+    postings: dict[str, list[Posting]] = {}
+    document_lengths: dict[str, int] = {}
+
+    for document in documents:
+        document_lengths[document.doc_id] = document.token_count
+        for term, count in document.term_counts.items():
+            postings.setdefault(term, []).append(
+                Posting(doc_id=document.doc_id, term_frequency=count)
+            )
+
+    for posting_list in postings.values():
+        posting_list.sort(key=lambda posting: posting.doc_id)
+
+    total_terms = sum(document_lengths.values())
+    return InvertedIndex(
+        postings=postings,
+        document_lengths=document_lengths,
+        document_count=len(documents),
+        total_terms=total_terms,
+    )
 
 
 def lookup(index: InvertedIndex, term: str) -> list[Posting]:
@@ -67,7 +88,7 @@ def lookup(index: InvertedIndex, term: str) -> list[Posting]:
         The list of Posting objects for the term.
         Returns an empty list if the term is not in the index.
     """
-    raise NotImplementedError("Students implement this in M2.")
+    return index.postings.get(term, [])
 
 
 # ---------------------------------------------------------------------------
@@ -84,7 +105,10 @@ def save_index(index: InvertedIndex, path: Path) -> None:
         index: The index to save.
         path: File path to write (will be created or overwritten).
     """
-    raise NotImplementedError("Students implement this in M2 (bonus).")
+    path.write_text(
+        json.dumps(index_to_dict(index), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
 
 def load_index(path: Path) -> InvertedIndex:
@@ -99,4 +123,5 @@ def load_index(path: Path) -> InvertedIndex:
     Returns:
         The reconstructed InvertedIndex.
     """
-    raise NotImplementedError("Students implement this in M2 (bonus).")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return index_from_dict(data)

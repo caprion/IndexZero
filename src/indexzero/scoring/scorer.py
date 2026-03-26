@@ -38,7 +38,12 @@ def compute_idf(term: str, index: InvertedIndex) -> float:
         A term in 2 of 500 documents has high IDF (~5.5).
         A term in 400 of 500 documents has negative IDF (~-1.4).
     """
-    raise NotImplementedError("M3: implement compute_idf")
+    posting_list = index.postings.get(term, [])
+    df = len(posting_list)
+    if df == 0:
+        return 0.0
+    n = index.document_count
+    return math.log((n - df + 0.5) / (df + 0.5))
 
 
 def score_bm25(
@@ -69,7 +74,27 @@ def score_bm25(
         - b=0 removes all length normalization.
         - k1 controls how quickly tf saturates.
     """
-    raise NotImplementedError("M3: implement score_bm25")
+    posting_list = index.postings.get(term, [])
+    if not posting_list:
+        return 0.0
+
+    tf = 0
+    for posting in posting_list:
+        if posting.doc_id == doc_id:
+            tf = posting.term_frequency
+            break
+
+    if tf == 0:
+        return 0.0
+
+    dl = index.document_lengths[doc_id]
+    avgdl = index.average_document_length
+    idf = compute_idf(term, index)
+
+    numerator = tf * (config.k1 + 1)
+    denominator = tf + config.k1 * (1 - config.b + config.b * dl / avgdl)
+
+    return idf * numerator / denominator
 
 
 def search(
@@ -100,4 +125,14 @@ def search(
         A list of SearchResult(doc_id, score), length <= top_k.
         Empty list if no documents match any query term.
     """
-    raise NotImplementedError("M3: implement search")
+    scores: dict[str, float] = {}
+
+    for term in query_terms:
+        posting_list = index.postings.get(term, [])
+        for posting in posting_list:
+            doc_id = posting.doc_id
+            score = score_bm25(term, doc_id, index, config)
+            scores[doc_id] = scores.get(doc_id, 0.0) + score
+
+    ranked = sorted(scores.items(), key=lambda pair: (-pair[1], pair[0]))
+    return [SearchResult(doc_id=doc_id, score=score) for doc_id, score in ranked[:top_k]]

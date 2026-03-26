@@ -10,6 +10,8 @@ Run tests:
 # This line lets you write list[str] instead of List[str] on Python 3.9.
 from __future__ import annotations
 
+from collections import Counter
+
 # The dot means "from this same package." Use pytest or python -m indexzero to run.
 from .contracts import TokenizedDocument, Vocabulary
 
@@ -38,4 +40,23 @@ def build_vocabulary(documents: list[TokenizedDocument]) -> Vocabulary:
     Returns:
         A Vocabulary instance with corpus-level statistics.
     """
-    raise NotImplementedError("Students implement this in M1.")
+    document_frequency: Counter[str] = Counter()
+    collection_frequency: Counter[str] = Counter()
+    token_to_id: dict[str, int] = {}
+
+    for document in documents:
+        unique_tokens = set(document.tokens)
+        document_frequency.update(unique_tokens)
+        collection_frequency.update(document.tokens)
+
+    for index, token in enumerate(sorted(collection_frequency), start=1):
+        token_to_id[token] = index
+
+    total_terms = sum(collection_frequency.values())
+    return Vocabulary(
+        token_to_id=token_to_id,
+        document_frequency=dict(document_frequency),
+        collection_frequency=dict(collection_frequency),
+        document_count=len(documents),
+        total_terms=total_terms,
+    )

@@ -6,7 +6,9 @@ Usage:
     python -m indexzero index --csv data/flipkart_titles_500.csv --output index.json
     python -m indexzero lookup --index index.json --term bluetooth
     python -m indexzero search --index index.json --query "samsung phone" --top-k 10
+    python -m indexzero search-structured --csv data/flipkart_titles_500.csv --query "\"wireless earbuds\"" --top-k 10
     python -m indexzero eval --index index.json --qrels data/amazon_esci_sample/qrels.csv --queries data/amazon_esci_sample/queries.csv --k 10
+    python -m indexzero eval-structured --csv data/movies/movies.csv --text-column text --doc-id-column doc_id --qrels data/movies/qrels.csv --queries data/movies/queries.csv --k 10
 """
 
 from __future__ import annotations
@@ -147,6 +149,25 @@ def _build_parser() -> argparse.ArgumentParser:
     srch.add_argument("--k1", type=float, default=1.2, help="BM25 k1 parameter (default: 1.2).")
     srch.add_argument("--b", type=float, default=0.75, help="BM25 b parameter (default: 0.75).")
 
+    # --- search-structured -------------------------------------------------
+    ssrch = subparsers.add_parser(
+        "search-structured",
+        help="Run structured lexical search with boolean, phrase, and NEAR queries.",
+    )
+    ssrch.add_argument("--csv", required=True, type=Path, help="Path to CSV file.")
+    ssrch.add_argument("--query", required=True, help="Structured query text.")
+    ssrch.add_argument("--top-k", type=int, default=10, help="Number of results (default: 10).")
+    ssrch.add_argument("--text-column", default="title", help="Name of the text column.")
+    ssrch.add_argument("--doc-id-column", default="product_id", help="Name of the document ID column.")
+    ssrch.add_argument("--limit", type=int, default=None, help="Limit number of documents to process.")
+    ssrch.add_argument("--k1", type=float, default=1.2, help="BM25 k1 parameter (default: 1.2).")
+    ssrch.add_argument("--b", type=float, default=0.75, help="BM25 b parameter (default: 0.75).")
+    ssrch.add_argument("--no-lowercase", action="store_true", help="Disable lowercasing.")
+    ssrch.add_argument("--drop-stopwords", action="store_true", help="Remove stopwords.")
+    ssrch.add_argument("--stemming", choices=["none", "suffix"], default="none")
+    ssrch.add_argument("--strip-accents", action="store_true")
+    ssrch.add_argument("--split-numeric", action="store_true")
+
     # --- eval --------------------------------------------------------------
     evl = subparsers.add_parser("eval", help="Evaluate search quality using qrels.")
     evl.add_argument("--index", required=True, type=Path, help="Path to index JSON file.")
@@ -167,6 +188,33 @@ def _build_parser() -> argparse.ArgumentParser:
     evl.add_argument("--stemming", choices=["none", "suffix"], default="none")
     evl.add_argument("--strip-accents", action="store_true")
     evl.add_argument("--split-numeric", action="store_true")
+
+    # --- eval-structured ---------------------------------------------------
+    sevl = subparsers.add_parser(
+        "eval-structured",
+        help="Evaluate structured lexical search using boolean, phrase, and NEAR queries.",
+    )
+    sevl.add_argument("--csv", required=True, type=Path, help="Path to CSV file.")
+    sevl.add_argument("--qrels", required=True, type=Path, help="Path to qrels CSV file.")
+    sevl.add_argument("--queries", required=True, type=Path, help="Path to queries CSV file.")
+    sevl.add_argument("--text-column", default="title", help="Name of the text column.")
+    sevl.add_argument("--doc-id-column", default="product_id", help="Name of the document ID column.")
+    sevl.add_argument("--limit", type=int, default=None, help="Limit number of documents to process.")
+    sevl.add_argument("--k", type=int, default=10, help="Cutoff depth for metrics (default: 10).")
+    sevl.add_argument("--top-k", type=int, default=10, help="Number of search results per query (default: 10).")
+    sevl.add_argument("--k1", type=float, default=1.2, help="BM25 k1 parameter (default: 1.2).")
+    sevl.add_argument("--b", type=float, default=0.75, help="BM25 b parameter (default: 0.75).")
+    sevl.add_argument(
+        "--relevance-threshold",
+        type=int,
+        default=2,
+        help="Minimum grade for binary relevance (default: 2).",
+    )
+    sevl.add_argument("--no-lowercase", action="store_true", help="Disable lowercasing.")
+    sevl.add_argument("--drop-stopwords", action="store_true", help="Remove stopwords.")
+    sevl.add_argument("--stemming", choices=["none", "suffix"], default="none")
+    sevl.add_argument("--strip-accents", action="store_true")
+    sevl.add_argument("--split-numeric", action="store_true")
 
     return parser
 
@@ -284,6 +332,38 @@ def main() -> None:
                 print(f"  {rank}. {result.doc_id}  score={result.score:.4f}")
         return
 
+    if args.command == "search-structured":
+        from .indexing import build_index
+        from .query_processing import build_positional_index, search_structured
+        from .scoring import ScorerConfig
+
+        config = _config_from_args(args)
+        documents = _load_csv_documents(
+            csv_path=args.csv,
+            text_column=args.text_column,
+            doc_id_column=args.doc_id_column,
+            limit=args.limit,
+            config=config,
+        )
+        index = build_index(documents)
+        positional_index = build_positional_index(documents)
+        scorer_config = ScorerConfig(k1=args.k1, b=args.b)
+        results = search_structured(
+            args.query,
+            index,
+            positional_index,
+            scorer_config,
+            top_k=args.top_k,
+            tokenizer_config=config,
+        )
+        if not results:
+            print(f"No results for '{args.query}'.")
+        else:
+            print(f"Top {len(results)} structured results for '{args.query}':")
+            for rank, result in enumerate(results, 1):
+                print(f"  {rank}. {result.doc_id}  score={result.score:.4f}")
+        return
+
     if args.command == "eval":
         import csv as csv_mod
 
@@ -319,6 +399,71 @@ def main() -> None:
 
         # Print report
         print(f"Evaluation Report (k={report.k}, queries={report.num_queries})")
+        print(f"  Mean P@{report.k}:    {report.mean_precision_at_k:.4f}")
+        print(f"  Mean R@{report.k}:    {report.mean_recall_at_k:.4f}")
+        print(f"  MRR:          {report.mean_reciprocal_rank:.4f}")
+        print(f"  Mean nDCG@{report.k}: {report.mean_ndcg_at_k:.4f}")
+
+        if report.per_query:
+            print()
+            print("Per-query breakdown:")
+            for qm in report.per_query:
+                print(
+                    f"  {qm.query_id}:  P@k={qm.precision_at_k:.3f}"
+                    f"  R@k={qm.recall_at_k:.3f}"
+                    f"  RR={qm.reciprocal_rank:.3f}"
+                    f"  nDCG={qm.ndcg_at_k:.3f}"
+                )
+        return
+
+    if args.command == "eval-structured":
+        import csv as csv_mod
+
+        from .evaluation import QueryResults, evaluate, load_qrels
+        from .indexing import build_index
+        from .query_processing import build_positional_index, search_structured
+        from .scoring import ScorerConfig
+
+        tok_config = _config_from_args(args)
+        scorer_config = ScorerConfig(k1=args.k1, b=args.b)
+        documents = _load_csv_documents(
+            csv_path=args.csv,
+            text_column=args.text_column,
+            doc_id_column=args.doc_id_column,
+            limit=args.limit,
+            config=tok_config,
+        )
+        index = build_index(documents)
+        positional_index = build_positional_index(documents)
+        qrels = load_qrels(args.qrels)
+
+        queries: list[tuple[str, str]] = []
+        with args.queries.open("r", encoding="utf-8-sig", newline="") as fh:
+            reader = csv_mod.DictReader(fh)
+            for row in reader:
+                queries.append((row["query_id"].strip(), row["query"].strip()))
+
+        all_results: list[QueryResults] = []
+        for query_id, query_text in queries:
+            search_results = search_structured(
+                query_text,
+                index,
+                positional_index,
+                scorer_config,
+                top_k=args.top_k,
+                tokenizer_config=tok_config,
+            )
+            doc_ids = [result.doc_id for result in search_results]
+            all_results.append(QueryResults(query_id=query_id, doc_ids=doc_ids))
+
+        report = evaluate(
+            all_results,
+            qrels,
+            k=args.k,
+            relevance_threshold=args.relevance_threshold,
+        )
+
+        print(f"Structured Evaluation Report (k={report.k}, queries={report.num_queries})")
         print(f"  Mean P@{report.k}:    {report.mean_precision_at_k:.4f}")
         print(f"  Mean R@{report.k}:    {report.mean_recall_at_k:.4f}")
         print(f"  MRR:          {report.mean_reciprocal_rank:.4f}")

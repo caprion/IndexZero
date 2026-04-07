@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- [0] favicon: cream brackets, terracotta zero, dark chocolate bg -->
+  <rect width="64" height="64" rx="8" fill="#1a120c"/>
+  <text x="32" y="45" text-anchor="middle" font-family="'IBM Plex Mono', 'Courier New', monospace" font-weight="700" font-size="38" fill="#ede4d5">[<tspan fill="#c2452d">0</tspan>]</text>
+</svg>

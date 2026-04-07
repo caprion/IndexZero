@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Option A full logo: [0] mark + IndexZero wordmark -->
+  <rect width="512" height="512" rx="48" fill="#1a120c"/>
+  <!-- [0] mark centered -->
+  <text x="256" y="270" text-anchor="middle" font-family="'IBM Plex Mono', 'Courier New', monospace" font-weight="700" font-size="220" fill="#ede4d5">[<tspan fill="#c2452d">0</tspan>]</text>
+  <!-- IndexZero wordmark -->
+  <text x="256" y="400" text-anchor="middle" font-family="'IBM Plex Mono', 'Courier New', monospace" font-weight="500" font-size="52" fill="#ede4d5">IndexZero</text>
+</svg>
